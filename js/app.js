@@ -78,19 +78,6 @@
   // Toast Container
   const toastContainer = document.getElementById('toast-container');
 
-  // iOS Install & Mobile Navigation
-  const btnInstallApp = document.getElementById('btn-install-app');
-  const btnActionInstallGuide = document.getElementById('btn-action-install-guide');
-  const modalIosInstall = document.getElementById('modal-ios-install');
-  const backdropIosInstall = document.getElementById('backdrop-ios-install');
-  const btnCloseIosModal = document.getElementById('btn-close-ios-modal');
-  const btnUnderstoodIos = document.getElementById('btn-understood-ios');
-  const mobileDotsBar = document.getElementById('mobile-dots-bar');
-  const btnMNavList = document.getElementById('btn-m-nav-list');
-  const btnMNavAdd = document.getElementById('btn-m-nav-add');
-  const btnMNavSync = document.getElementById('btn-m-nav-sync');
-  const btnMNavInstall = document.getElementById('btn-m-nav-install');
-
   // =========================================================================
   // INITIALIZATION
   // =========================================================================
@@ -99,8 +86,6 @@
     bindEditorEvents();
     bindLightboxEvents();
     bindSwipeEvents();
-    registerServiceWorker();
-    checkStandaloneMode();
 
     try {
       // Xóa sạch toàn bộ dữ liệu cũ theo yêu cầu người dùng để bắt đầu đồng bộ Firebase mới
@@ -125,53 +110,6 @@
   }
 
   // =========================================================================
-  // PWA & IPHONE INSTALL HELPERS
-  // =========================================================================
-  function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
-          console.log('PWA Service Worker registered:', reg.scope);
-        }).catch((err) => {
-          console.warn('PWA Service Worker registration skipped:', err);
-        });
-      });
-    }
-  }
-
-  function checkStandaloneMode() {
-    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
-      if (btnInstallApp) btnInstallApp.classList.add('hidden');
-      const mInstallLabel = document.getElementById('m-nav-install-label');
-      if (mInstallLabel) mInstallLabel.textContent = 'App Đã Cài';
-    }
-  }
-
-  function openIosInstallModal() {
-    if (modalIosInstall) modalIosInstall.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeIosInstallModal() {
-    if (modalIosInstall) modalIosInstall.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-
-  function updateBottomNavActive(viewName) {
-    if (btnMNavList) btnMNavList.classList.remove('active');
-    if (btnMNavAdd) btnMNavAdd.classList.remove('active');
-    if (btnMNavSync) btnMNavSync.classList.remove('active');
-    if (btnMNavInstall) btnMNavInstall.classList.remove('active');
-
-    if (viewName === 'list' && btnMNavList) {
-      btnMNavList.classList.add('active');
-    } else if (viewName === 'editor' && btnMNavAdd) {
-      btnMNavAdd.classList.add('active');
-    }
-  }
-
-  // =========================================================================
   // ROUTING & VIEW NAVIGATION
   // =========================================================================
   function showView(viewName) {
@@ -181,9 +119,6 @@
 
     // Close any opened menu
     dropdownMore.classList.add('hidden');
-
-    // Update Mobile Bottom Nav state
-    updateBottomNavActive(viewName);
 
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -417,39 +352,21 @@
     }
   }
 
-  function updateActiveMobileTabsAndDots(index) {
-    activeMobileFrameIndex = index;
-    if (mobileTabsBar) {
-      const tabBtns = mobileTabsBar.querySelectorAll('.m-tab-btn');
-      tabBtns.forEach(btn => {
-        const btnIndex = parseInt(btn.dataset.frameIndex, 10);
-        if (btnIndex === index) {
-          btn.classList.add('active');
-          btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-    }
-
-    if (mobileDotsBar) {
-      const dots = mobileDotsBar.querySelectorAll('.m-dot');
-      dots.forEach(dot => {
-        const dotIndex = parseInt(dot.dataset.frameIndex, 10);
-        if (dotIndex === index) {
-          dot.classList.add('active');
-        } else {
-          dot.classList.remove('active');
-        }
-      });
-    }
-  }
-
   function setActiveMobileFrame(index) {
-    updateActiveMobileTabsAndDots(index);
+    activeMobileFrameIndex = index;
+    const tabBtns = mobileTabsBar.querySelectorAll('.m-tab-btn');
+    tabBtns.forEach(btn => {
+      const btnIndex = parseInt(btn.dataset.frameIndex, 10);
+      if (btnIndex === index) {
+        btn.classList.add('active');
+        btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      } else {
+        btn.classList.remove('active');
+      }
+    });
 
     // Scroll carousel to target card if on mobile
-    if (window.innerWidth < 768 && detailFramesGrid) {
+    if (window.innerWidth < 768) {
       const targetCard = document.getElementById(`detail-card-${index}`);
       if (targetCard) {
         targetCard.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
@@ -669,7 +586,7 @@
   }
 
   // =========================================================================
-  // SWIPE DETECTION & SCROLL SYNC (MOBILE GESTURES)
+  // SWIPE DETECTION (MOBILE GESTURES)
   // =========================================================================
   function bindSwipeEvents() {
     let touchStartX = 0;
@@ -684,21 +601,6 @@
       const touchEndX = e.changedTouches[0].screenX;
       const touchEndY = e.changedTouches[0].screenY;
       handleSwipeGesture(touchStartX, touchStartY, touchEndX, touchEndY);
-    }, { passive: true });
-
-    // Sync active tab/dot during native iOS momentum scroll
-    let scrollDebounceTimer = null;
-    detailFramesGrid.addEventListener('scroll', () => {
-      if (window.innerWidth >= 768) return;
-      clearTimeout(scrollDebounceTimer);
-      scrollDebounceTimer = setTimeout(() => {
-        const width = detailFramesGrid.clientWidth;
-        if (!width) return;
-        const newIndex = Math.min(4, Math.max(1, Math.round(detailFramesGrid.scrollLeft / width) + 1));
-        if (newIndex !== activeMobileFrameIndex) {
-          updateActiveMobileTabsAndDots(newIndex);
-        }
-      }, 50);
     }, { passive: true });
   }
 
@@ -730,38 +632,6 @@
     btnBrandHome.addEventListener('click', () => showView('list'));
     btnHeaderAdd.addEventListener('click', () => openEditorView(null));
     btnDetailBack.addEventListener('click', () => showView('list'));
-
-    // iOS Installation Modal Events
-    if (btnInstallApp) btnInstallApp.addEventListener('click', openIosInstallModal);
-    if (btnActionInstallGuide) {
-      btnActionInstallGuide.addEventListener('click', () => {
-        dropdownMore.classList.add('hidden');
-        openIosInstallModal();
-      });
-    }
-    if (btnCloseIosModal) btnCloseIosModal.addEventListener('click', closeIosInstallModal);
-    if (btnUnderstoodIos) btnUnderstoodIos.addEventListener('click', closeIosInstallModal);
-    if (backdropIosInstall) backdropIosInstall.addEventListener('click', closeIosInstallModal);
-
-    // Mobile Bottom Navigation Bar Events
-    if (btnMNavList) {
-      btnMNavList.addEventListener('click', () => showView('list'));
-    }
-    if (btnMNavAdd) {
-      btnMNavAdd.addEventListener('click', () => openEditorView(null));
-    }
-    if (btnMNavSync) {
-      btnMNavSync.addEventListener('click', async () => {
-        showToast('Đang đồng bộ Firebase Cloud...', 'info');
-        if (window.cloudSync) {
-          await window.cloudSync.syncAll();
-          showToast('Đã hoàn tất đồng bộ Cloud!', 'success');
-        }
-      });
-    }
-    if (btnMNavInstall) {
-      btnMNavInstall.addEventListener('click', openIosInstallModal);
-    }
 
     // Empty state buttons
     document.getElementById('btn-empty-add').addEventListener('click', () => openEditorView(null));
@@ -844,17 +714,6 @@
         setActiveMobileFrame(index);
       }
     });
-
-    // Mobile Dots Click
-    if (mobileDotsBar) {
-      mobileDotsBar.addEventListener('click', (e) => {
-        const dot = e.target.closest('.m-dot');
-        if (dot) {
-          const index = parseInt(dot.dataset.frameIndex, 10);
-          setActiveMobileFrame(index);
-        }
-      });
-    }
 
     // Click frame image in Detail View to zoom in lightbox
     for (let i = 1; i <= 4; i++) {
@@ -941,58 +800,21 @@
     });
   }
 
-  async function pasteFromClipboard(frameIndex) {
-    try {
-      if (navigator.clipboard && navigator.clipboard.read) {
-        const items = await navigator.clipboard.read();
-        for (const item of items) {
-          for (const type of item.types) {
-            if (type.startsWith('image/')) {
-              const blob = await item.getType(type);
-              handleImageFile(blob, frameIndex);
-              return;
-            }
-          }
-        }
-      }
-      showToast('Không có ảnh trong Clipboard. Đang mở Thư viện...', 'info');
-      document.getElementById(`file-input-${frameIndex}`).click();
-    } catch (err) {
-      console.warn('Clipboard read error:', err);
-      showToast('Hãy chọn ảnh từ Thư viện trên iPhone', 'info');
-      document.getElementById(`file-input-${frameIndex}`).click();
-    }
-  }
-
   function setupDropzone(frameIndex) {
     const dropzone = document.getElementById(`dropzone-${frameIndex}`);
     const fileInput = document.getElementById(`file-input-${frameIndex}`);
 
     // Click trigger for file input button
     dropzone.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-paste-clipboard')) return;
       if (e.target.closest('.btn-file-pick') || e.target.closest('.btn-change-img')) {
         fileInput.click();
       } else if (e.target.closest('.btn-remove-img')) {
         clearImagePreview(frameIndex);
       } else {
-        // On mobile: tap anywhere in empty zone opens photo picker directly
-        if (window.innerWidth < 768 && !document.getElementById(`img-data-${frameIndex}`).value) {
-          fileInput.click();
-        } else {
-          dropzone.focus();
-        }
+        // Focus the dropzone so Ctrl+V targets it
+        dropzone.focus();
       }
     });
-
-    // Clipboard paste button listener
-    const btnPaste = dropzone.querySelector('.btn-paste-clipboard');
-    if (btnPaste) {
-      btnPaste.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await pasteFromClipboard(frameIndex);
-      });
-    }
 
     // File Input change
     fileInput.addEventListener('change', () => {
