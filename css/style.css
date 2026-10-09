@@ -1418,31 +1418,86 @@ html, body {
 }
 
 /* MOBILE / IPHONE (< 768px) */
-/* Hiển thị 1 khung to bản tràn viền + Vuốt ngang trái/phải + 4 Tabs chuyển khung */
+/* Tối ưu hóa toàn diện cho iPhone: Dễ theo dõi, đổi chế độ lướt/cuộn, chống giật */
 @media screen and (max-width: 767px) {
+  /* Chống iOS Safari tự động phóng to làm lệch giao diện khi chạm gõ */
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea,
+  .input-control,
+  .select-control,
+  .tf-select,
+  .note-textarea {
+    font-size: 16px !important;
+  }
+
+  .app-header {
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: 8px;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+
   .header-container {
-    padding: 2px 0;
+    padding: 0;
+    gap: 8px;
   }
 
   .brand-title {
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .brand-subtitle {
     display: none;
   }
 
+  .cloud-sync-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
   .btn {
-    padding: 7px 10px;
+    padding: 6px 10px;
     font-size: 12px;
   }
 
   .main-content {
-    padding: 10px 8px;
+    padding: 10px 10px max(24px, env(safe-area-inset-bottom)) 10px;
+  }
+
+  .toolbar-card {
+    padding: 12px;
   }
 
   .filters-row {
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .filter-item {
+    width: 100%;
+  }
+
+  .filter-item .select-control {
+    width: 100%;
+  }
+
+  .filter-counter {
+    grid-column: 1 / -1;
+    text-align: right;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .playbooks-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .playbook-summary-card {
+    padding: 14px;
   }
 
   .form-grid-3 {
@@ -1450,31 +1505,151 @@ html, body {
     gap: 10px;
   }
 
-  /* Show Mobile Tabs Bar in Detail View */
+  /* Sticky Navigation Tabs bar trên iPhone để dễ theo dõi */
   .mobile-tabs-container {
     display: block;
+    position: sticky;
+    top: 50px;
+    z-index: 40;
+    background-color: rgba(10, 13, 20, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
   }
 
-  /* Mobile Detail View: Frames Carousel */
+  /* Thanh chọn chế độ xem: Từng khung HOẶC Cuộn cả 4 khung */
+  .mobile-view-mode-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    padding: 5px 8px;
+    margin-bottom: 8px;
+  }
+
+  .mode-bar-label {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+  }
+
+  .mode-toggle-pills {
+    display: flex;
+    gap: 4px;
+    background-color: #0b101b;
+    padding: 2px;
+    border-radius: 5px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .btn-mode-pill {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-main);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-mode-pill.active {
+    background-color: var(--accent-cyan);
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .mobile-tabs-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mobile-tabs-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .m-tab-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 6px;
+    font-size: 11.5px;
+    border-radius: 6px;
+  }
+
+  /* Chế độ 1: Lướt từng khung ngang mượt mà (ProMotion 120Hz) */
   .frames-grid-layout {
     display: flex;
-    overflow-x: hidden;
+    overflow-x: auto !important;
     scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     gap: 0;
     width: 100%;
     position: relative;
-    touch-action: pan-y;
+    scrollbar-width: none;
+  }
+
+  .frames-grid-layout::-webkit-scrollbar {
+    display: none;
   }
 
   .tf-card {
-    min-width: 100%;
-    max-width: 100%;
-    flex-shrink: 0;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
+    scroll-margin-top: 115px;
     border-radius: 8px;
   }
 
-  /* Editor 4 frames stacked or swipeable on mobile */
+  /* Chế độ 2: Cuộn dọc liên tục 4 khung (Top-Down Feed) */
+  .frames-grid-layout.stacked-mode {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: visible !important;
+    gap: 16px !important;
+  }
+
+  .frames-grid-layout.stacked-mode .tf-card {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
+    scroll-snap-align: none !important;
+  }
+
+  /* Luôn hiển thị chỉ dẫn phóng to nến trên màn hình cảm ứng */
+  .zoom-indicator {
+    opacity: 0.95 !important;
+    background-color: rgba(10, 14, 23, 0.88);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+
+  .tf-note-content {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  /* Editor 4 frames stacked on mobile */
   .editor-frames-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -1489,11 +1664,14 @@ html, body {
   .editor-header-card {
     flex-direction: column;
     align-items: flex-start;
+    padding: 12px 14px;
+    gap: 10px;
   }
 
   .detail-nav-right,
   .editor-nav-right {
     width: 100%;
+    display: flex;
     justify-content: flex-end;
   }
 }

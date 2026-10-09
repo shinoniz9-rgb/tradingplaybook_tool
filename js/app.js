@@ -10,6 +10,7 @@
   let currentPlaybooks = [];
   let currentDetailPlaybook = null;
   let activeMobileFrameIndex = 1;
+  let mobileDetailMode = 'swipe'; // 'swipe' (từng khung) hoặc 'stack' (cuộn cả 4 khung)
   let currentZoom = 1;
   let isDraggingZoom = false;
   let zoomStartX = 0;
@@ -53,6 +54,9 @@
   const btnDetailDelete = document.getElementById('btn-detail-delete');
   const detailFramesGrid = document.getElementById('detail-frames-grid');
   const mobileTabsBar = document.getElementById('mobile-tabs-bar');
+  const btnModeSwipe = document.getElementById('btn-mode-swipe');
+  const btnModeStack = document.getElementById('btn-mode-stack');
+  const mobileSwipeHint = document.getElementById('mobile-swipe-hint');
 
   // Editor View elements
   const editorForm = document.getElementById('editor-form');
@@ -343,6 +347,9 @@
         }
       }
 
+      // Apply current mobile detail mode
+      setMobileDetailMode(mobileDetailMode);
+
       // Reset mobile active tab to 1
       setActiveMobileFrame(1);
 
@@ -352,9 +359,36 @@
     }
   }
 
-  function setActiveMobileFrame(index) {
+  function setMobileDetailMode(mode) {
+    mobileDetailMode = mode;
+    if (mode === 'stack') {
+      detailFramesGrid.classList.add('stacked-mode');
+      if (btnModeStack) btnModeStack.classList.add('active');
+      if (btnModeSwipe) btnModeSwipe.classList.remove('active');
+      if (mobileSwipeHint) {
+        mobileSwipeHint.textContent = 'Cuộn dọc để xem liền mạch cả 4 khung • Bấm tab để nhảy nhanh';
+      }
+      const targetCard = document.getElementById(`detail-card-${activeMobileFrameIndex}`);
+      if (targetCard && window.innerWidth < 768) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      detailFramesGrid.classList.remove('stacked-mode');
+      if (btnModeSwipe) btnModeSwipe.classList.add('active');
+      if (btnModeStack) btnModeStack.classList.remove('active');
+      if (mobileSwipeHint) {
+        mobileSwipeHint.textContent = 'Vuốt ngang hoặc bấm tab để đổi khung • Chạm vào ảnh để phóng to';
+      }
+      const targetCard = document.getElementById(`detail-card-${activeMobileFrameIndex}`);
+      if (targetCard && window.innerWidth < 768) {
+        targetCard.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      }
+    }
+  }
+
+  function setActiveMobileFrame(index, scrollCard = true) {
     activeMobileFrameIndex = index;
-    const tabBtns = mobileTabsBar.querySelectorAll('.m-tab-btn');
+    const tabBtns = mobileTabsBar ? mobileTabsBar.querySelectorAll('.m-tab-btn') : [];
     tabBtns.forEach(btn => {
       const btnIndex = parseInt(btn.dataset.frameIndex, 10);
       if (btnIndex === index) {
@@ -365,11 +399,15 @@
       }
     });
 
-    // Scroll carousel to target card if on mobile
-    if (window.innerWidth < 768) {
+    // Scroll carousel or feed to target card if on mobile
+    if (scrollCard && window.innerWidth < 768) {
       const targetCard = document.getElementById(`detail-card-${index}`);
       if (targetCard) {
-        targetCard.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        if (mobileDetailMode === 'stack') {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          targetCard.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        }
       }
     }
   }
@@ -586,7 +624,7 @@
   }
 
   // =========================================================================
-  // SWIPE DETECTION (MOBILE GESTURES)
+  // SWIPE DETECTION & SCROLL TAB SYNCHRONIZATION (IPHONE / MOBILE)
   // =========================================================================
   function bindSwipeEvents() {
     let touchStartX = 0;
@@ -602,9 +640,55 @@
       const touchEndY = e.changedTouches[0].screenY;
       handleSwipeGesture(touchStartX, touchStartY, touchEndX, touchEndY);
     }, { passive: true });
+
+    // Đồng bộ Tab khi người dùng lướt ngang mượt mà (Swipe mode)
+    let isTickingHorizontal = false;
+    detailFramesGrid.addEventListener('scroll', () => {
+      if (mobileDetailMode !== 'swipe' || window.innerWidth >= 768) return;
+      if (!isTickingHorizontal) {
+        window.requestAnimationFrame(() => {
+          const width = detailFramesGrid.clientWidth;
+          if (width > 0) {
+            const newIndex = Math.min(4, Math.max(1, Math.round(detailFramesGrid.scrollLeft / width) + 1));
+            if (newIndex !== activeMobileFrameIndex) {
+              setActiveMobileFrame(newIndex, false);
+            }
+          }
+          isTickingHorizontal = false;
+        });
+        isTickingHorizontal = true;
+      }
+    }, { passive: true });
+
+    // Đồng bộ Tab khi người dùng cuộn dọc liên tục (Stack mode)
+    let isTickingVertical = false;
+    window.addEventListener('scroll', () => {
+      if (mobileDetailMode !== 'stack' || !viewDetail.classList.contains('active') || window.innerWidth >= 768) return;
+      if (!isTickingVertical) {
+        window.requestAnimationFrame(() => {
+          for (let i = 1; i <= 4; i++) {
+            const card = document.getElementById(`detail-card-${i}`);
+            if (card) {
+              const rect = card.getBoundingClientRect();
+              // Card đang nằm trong vùng đọc chính ngay dưới sticky tabs bar
+              if (rect.top <= 170 && rect.bottom >= 170) {
+                if (activeMobileFrameIndex !== i) {
+                  setActiveMobileFrame(i, false);
+                }
+                break;
+              }
+            }
+          }
+          isTickingVertical = false;
+        });
+        isTickingVertical = true;
+      }
+    }, { passive: true });
   }
 
   function handleSwipeGesture(startX, startY, endX, endY) {
+    if (mobileDetailMode === 'stack') return; // Không vuốt ngang khi đang ở chế độ cuộn dọc
+
     const diffX = endX - startX;
     const diffY = endY - startY;
 
@@ -705,6 +789,14 @@
         confirmDeletePlaybook(currentDetailPlaybook.id, currentDetailPlaybook.title);
       }
     });
+
+    // Chế độ xem trên Mobile (Từng khung hoặc Cuộn dọc cả 4 khung)
+    if (btnModeSwipe) {
+      btnModeSwipe.addEventListener('click', () => setMobileDetailMode('swipe'));
+    }
+    if (btnModeStack) {
+      btnModeStack.addEventListener('click', () => setMobileDetailMode('stack'));
+    }
 
     // Mobile Tabs Click
     mobileTabsBar.addEventListener('click', (e) => {
@@ -879,7 +971,7 @@
       updateLightboxTransform();
     });
 
-    // Double click to toggle 100% / 200%
+    // Double click to toggle 100% / 200% (Desktop)
     lightboxImg.addEventListener('dblclick', () => {
       if (currentZoom > 1) {
         currentZoom = 1;
@@ -891,7 +983,27 @@
       updateLightboxTransform();
     });
 
-    // Drag to pan when zoomed
+    // Chạm đúp (Double-tap) trên màn hình iPhone để soi chi tiết nến
+    let lastTapTime = 0;
+    lightboxImg.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      const diff = now - lastTapTime;
+      if (diff > 0 && diff < 350) {
+        e.preventDefault();
+        if (currentZoom > 1) {
+          currentZoom = 1;
+          zoomTranslateX = 0;
+          zoomTranslateY = 0;
+        } else {
+          currentZoom = 2.2;
+        }
+        updateLightboxTransform();
+      }
+      lastTapTime = now;
+      isDraggingZoom = false;
+    });
+
+    // Drag to pan when zoomed (Desktop Mouse)
     lightboxImg.addEventListener('mousedown', (e) => {
       if (currentZoom > 1) {
         isDraggingZoom = true;
@@ -915,6 +1027,25 @@
         lightboxImg.classList.remove('dragging');
       }
     });
+
+    // Kéo rê 1 ngón tay để soi nến trên iPhone khi phóng to
+    let touchPanStartX = 0;
+    let touchPanStartY = 0;
+    lightboxImg.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1 && currentZoom > 1) {
+        touchPanStartX = e.touches[0].clientX - zoomTranslateX;
+        touchPanStartY = e.touches[0].clientY - zoomTranslateY;
+        isDraggingZoom = true;
+      }
+    }, { passive: true });
+
+    lightboxImg.addEventListener('touchmove', (e) => {
+      if (isDraggingZoom && e.touches.length === 1 && currentZoom > 1) {
+        zoomTranslateX = e.touches[0].clientX - touchPanStartX;
+        zoomTranslateY = e.touches[0].clientY - touchPanStartY;
+        updateLightboxTransform();
+      }
+    }, { passive: true });
 
     // Close on ESC
     document.addEventListener('keydown', (e) => {
