@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#0b0e14">
+  <meta name="description" content="Trading Playbook - Hệ thống lưu trữ và ôn tập mô hình Giá và phân kỳ RSI đa khung thời gian">
+  <title>Trading Playbook | Mô Hình Giá & RSI</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- APP CONTAINER -->
+  <div id="app" class="app-layout">
+
+    <!-- GLOBAL HEADER -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand-group" id="btn-brand-home">
+          <div class="brand-title">TRADING PLAYBOOK</div>
+          <div class="brand-subtitle">MÔ HÌNH GIÁ & RSI ĐA KHUNG</div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-cloud-sync" class="cloud-sync-pill" type="button" title="Đồng bộ Firebase Cloud: Bấm để làm mới ngay">
+            <span class="sync-dot"></span>
+            <span id="sync-status-label">☁️ Đang kết nối...</span>
+          </button>
+
+          <button id="btn-header-add" class="btn btn-primary" type="button">+ THÊM MẪU MỚI</button>
+          
+          <div class="dropdown-menu-wrapper">
+            <button id="btn-more-menu" class="btn btn-secondary" type="button" aria-expanded="false">DỮ LIỆU ▾</button>
+            <div id="dropdown-more" class="dropdown-popover hidden">
+              <button id="btn-action-sync-now" class="dropdown-item text-cyan" type="button">🔄 Đồng bộ đám mây ngay</button>
+              <div class="dropdown-divider"></div>
+              <button id="btn-action-export" class="dropdown-item" type="button">Xuất file sao lưu (JSON)</button>
+              <label class="dropdown-item file-label">
+                Nhập file sao lưu (JSON)
+                <input type="file" id="input-import-file" accept=".json" class="visually-hidden">
+              </label>
+              <div class="dropdown-divider"></div>
+              <button id="btn-action-clear-all" class="dropdown-item text-danger" type="button">Xóa tất cả dữ liệu</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: DANH SÁCH MÔ HÌNH (LIBRARY VIEW) -->
+      <!-- ========================================== -->
+      <section id="view-list" class="view-section active">
+        <!-- FILTER & SEARCH BAR -->
+        <div class="toolbar-card">
+          <div class="search-box">
+            <input type="text" id="filter-search" class="input-search" placeholder="Tìm theo tên mô hình hoặc nội dung ghi chú...">
+            <button id="btn-clear-search" class="btn-clear-search hidden" type="button" title="Xóa tìm kiếm">X</button>
+          </div>
+
+          <div class="filters-row">
+            <div class="filter-item">
+              <label for="filter-pair" class="filter-label">CẶP:</label>
+              <select id="filter-pair" class="select-control">
+                <option value="ALL">Tất cả</option>
+                <option value="XAU">XAU</option>
+                <option value="BTC">BTC</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="filter-position" class="filter-label">VỊ THẾ:</label>
+              <select id="filter-position" class="select-control">
+                <option value="ALL">Tất cả</option>
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="filter-outcome" class="filter-label">KẾT QUẢ:</label>
+              <select id="filter-outcome" class="select-control">
+                <option value="ALL">Tất cả</option>
+                <option value="Thắng">Thắng</option>
+                <option value="Thua">Thua</option>
+                <option value="Hòa">Hòa</option>
+                <option value="Quan sát">Quan sát</option>
+              </select>
+            </div>
+
+            <div class="filter-counter" id="list-count-badge">
+              0 mô hình
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAYBOOK GRID LIST -->
+        <div id="playbooks-container" class="playbooks-grid">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="empty-state" class="empty-card hidden">
+          <div class="empty-title" id="empty-title">Chưa có mô hình nào</div>
+          <div class="empty-desc" id="empty-desc">Hãy thêm mô hình đầu tiên của bạn để bắt đầu lưu trữ và ôn tập.</div>
+          <div class="empty-actions">
+            <button id="btn-empty-add" class="btn btn-primary">+ THÊM MẪU MỚI</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: XEM CHI TIẾT MÔ HÌNH (DETAIL VIEW) -->
+      <!-- ========================================== -->
+      <section id="view-detail" class="view-section">
+        <!-- DETAIL NAVIGATION & HEADER -->
+        <div class="detail-header-card">
+          <div class="detail-nav-left">
+            <button id="btn-detail-back" class="btn btn-secondary btn-back" type="button">← Quay lại danh sách</button>
+            <div class="detail-meta-group">
+              <h1 id="detail-title" class="detail-title-text">-</h1>
+              <div class="detail-badges-row">
+                <span id="detail-badge-pair" class="badge badge-pair">-</span>
+                <span id="detail-badge-position" class="badge badge-pos">-</span>
+                <span id="detail-badge-outcome" class="badge badge-outcome">-</span>
+                <span id="detail-date" class="meta-date">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-nav-right">
+            <button id="btn-detail-edit" class="btn btn-secondary" type="button">Chỉnh sửa</button>
+            <button id="btn-detail-delete" class="btn btn-danger" type="button">Xóa mẫu</button>
+          </div>
+        </div>
+
+        <!-- MOBILE TIMEFRAME NAVIGATION TABS (Shown on Mobile) -->
+        <div class="mobile-tabs-container">
+          <div class="mobile-tabs-scroll" id="mobile-tabs-bar">
+            <button class="m-tab-btn active" data-frame-index="1" type="button">1. Xu Hướng</button>
+            <button class="m-tab-btn" data-frame-index="2" type="button">2. Mô Hình</button>
+            <button class="m-tab-btn" data-frame-index="3" type="button">3. Liền Kề</button>
+            <button class="m-tab-btn" data-frame-index="4" type="button">4. Cấu Trúc</button>
+          </div>
+          <div class="mobile-swipe-hint">Vuốt ngang trái / phải để chuyển khung • Chạm vào ảnh để phóng to</div>
+        </div>
+
+        <!-- 4 TIMEFRAME CARDS CONTAINER -->
+        <!-- Desktop & iPad: 2x2 Grid with balanced 50%-50% proportions -->
+        <!-- Mobile: Swipeable carousel/cards -->
+        <div id="detail-frames-grid" class="frames-grid-layout">
+          <!-- CARD 1: XU HƯỚNG -->
+          <article class="tf-card" id="detail-card-1" data-frame="1">
+            <div class="tf-card-header">
+              <span class="tf-role-label">1. XU HƯỚNG</span>
+              <span class="tf-badge" id="detail-tf-1">1D</span>
+            </div>
+            <div class="tf-image-container" id="detail-img-box-1" title="Chạm để phóng to biểu đồ">
+              <img id="detail-img-1" src="" alt="Biểu đồ Khung 1 - Xu Hướng" class="tf-chart-img">
+              <div class="tf-img-empty-placeholder hidden">Không có ảnh</div>
+              <div class="zoom-indicator">Phóng to</div>
+            </div>
+            <div class="tf-note-box">
+              <div class="tf-note-title">Điều kiện & Ghi chú:</div>
+              <div class="tf-note-content" id="detail-note-1">-</div>
+            </div>
+          </article>
+
+          <!-- CARD 2: MÔ HÌNH -->
+          <article class="tf-card" id="detail-card-2" data-frame="2">
+            <div class="tf-card-header">
+              <span class="tf-role-label">2. MÔ HÌNH</span>
+              <span class="tf-badge" id="detail-tf-2">H4</span>
+            </div>
+            <div class="tf-image-container" id="detail-img-box-2" title="Chạm để phóng to biểu đồ">
+              <img id="detail-img-2" src="" alt="Biểu đồ Khung 2 - Mô Hình" class="tf-chart-img">
+              <div class="tf-img-empty-placeholder hidden">Không có ảnh</div>
+              <div class="zoom-indicator">Phóng to</div>
+            </div>
+            <div class="tf-note-box">
+              <div class="tf-note-title">Điều kiện & Ghi chú:</div>
+              <div class="tf-note-content" id="detail-note-2">-</div>
+            </div>
+          </article>
+
+          <!-- CARD 3: LIỀN KỀ -->
+          <article class="tf-card" id="detail-card-3" data-frame="3">
+            <div class="tf-card-header">
+              <span class="tf-role-label">3. LIỀN KỀ</span>
+              <span class="tf-badge" id="detail-tf-3">H1</span>
+            </div>
+            <div class="tf-image-container" id="detail-img-box-3" title="Chạm để phóng to biểu đồ">
+              <img id="detail-img-3" src="" alt="Biểu đồ Khung 3 - Liền Kề" class="tf-chart-img">
+              <div class="tf-img-empty-placeholder hidden">Không có ảnh</div>
+              <div class="zoom-indicator">Phóng to</div>
+            </div>
+            <div class="tf-note-box">
+              <div class="tf-note-title">Điều kiện & Ghi chú:</div>
+              <div class="tf-note-content" id="detail-note-3">-</div>
+            </div>
+          </article>
+
+          <!-- CARD 4: CẤU TRÚC -->
+          <article class="tf-card" id="detail-card-4" data-frame="4">
+            <div class="tf-card-header">
+              <span class="tf-role-label">4. CẤU TRÚC</span>
+              <span class="tf-badge" id="detail-tf-4">M15</span>
+            </div>
+            <div class="tf-image-container" id="detail-img-box-4" title="Chạm để phóng to biểu đồ">
+              <img id="detail-img-4" src="" alt="Biểu đồ Khung 4 - Cấu Trúc" class="tf-chart-img">
+              <div class="tf-img-empty-placeholder hidden">Không có ảnh</div>
+              <div class="zoom-indicator">Phóng to</div>
+            </div>
+            <div class="tf-note-box">
+              <div class="tf-note-title">Điều kiện & Ghi chú:</div>
+              <div class="tf-note-content" id="detail-note-4">-</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: THÊM MỚI / CHỈNH SỬA (EDITOR VIEW) -->
+      <!-- ========================================== -->
+      <section id="view-editor" class="view-section">
+        <form id="editor-form" autocomplete="off">
+          <input type="hidden" id="edit-id" value="">
+
+          <!-- EDITOR TOP CONTROLS -->
+          <div class="editor-header-card">
+            <div class="editor-nav-left">
+              <button type="button" id="btn-editor-cancel" class="btn btn-secondary">Hủy bỏ</button>
+              <h2 id="editor-heading" class="editor-heading-text">Thêm Mới Mô Hình</h2>
+            </div>
+            <div class="editor-nav-right">
+              <button type="submit" id="btn-editor-submit" class="btn btn-primary btn-save">LƯU MÔ HÌNH</button>
+            </div>
+          </div>
+
+          <!-- META FIELDS SECTION -->
+          <div class="editor-meta-card">
+            <div class="form-row form-row-title">
+              <label for="edit-title" class="form-label required">Tiêu đề mẫu:</label>
+              <input type="text" id="edit-title" class="input-control" placeholder="VD: 2 Đáy Đảo Chiều + Phân Kỳ RSI Bullish" required maxlength="120">
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="edit-pair" class="form-label required">Cặp giao dịch:</label>
+                <select id="edit-pair" class="select-control" required>
+                  <option value="XAU">XAU</option>
+                  <option value="BTC">BTC</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="edit-position" class="form-label required">Vị thế:</label>
+                <select id="edit-position" class="select-control" required>
+                  <option value="BUY">BUY</option>
+                  <option value="SELL">SELL</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="edit-outcome" class="form-label required">Kết quả lệnh:</label>
+                <select id="edit-outcome" class="select-control" required>
+                  <option value="Thắng">Thắng</option>
+                  <option value="Thua">Thua</option>
+                  <option value="Hòa">Hòa</option>
+                  <option value="Quan sát">Quan sát</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PRESETS QUICK TIME-FRAME BAR -->
+            <div class="presets-row">
+              <span class="presets-label">Gán nhanh khung giờ (Preset):</span>
+              <button type="button" class="btn-preset" data-preset="swing">Swing (1D - H4 - H1 - M15)</button>
+              <button type="button" class="btn-preset" data-preset="intraday">Intraday (H4 - H1 - M15 - M5)</button>
+              <button type="button" class="btn-preset" data-preset="scalp">Scalp (H1 - M30 - M15 - M5)</button>
+            </div>
+          </div>
+
+          <!-- 4 FRAMES EDITORS (2x2 GRID) -->
+          <div class="editor-frames-grid">
+
+            <!-- FRAME 1: XU HƯỚNG -->
+            <div class="editor-tf-card" id="edit-box-1" data-frame="1">
+              <div class="editor-tf-header">
+                <span class="tf-role-title">1. Xu Hướng</span>
+                <div class="tf-select-wrapper">
+                  <label class="sr-only" for="edit-tf-1">Khung giờ 1</label>
+                  <select id="edit-tf-1" class="tf-select">
+                    <option value="1D" selected>1D</option>
+                    <option value="H4">H4</option>
+                    <option value="H2">H2</option>
+                    <option value="H1">H1</option>
+                    <option value="M30">M30</option>
+                    <option value="M15">M15</option>
+                    <option value="M10">M10</option>
+                    <option value="M5">M5</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- IMAGE UPLOAD / PASTE ZONE -->
+              <div class="upload-dropzone" id="dropzone-1" tabindex="0">
+                <input type="file" id="file-input-1" accept="image/*" class="visually-hidden">
+                <input type="hidden" id="img-data-1" value="">
+
+                <div class="upload-idle-state" id="upload-idle-1">
+                  <div class="upload-instruction-pc">Bấm vào đây rồi ấn <strong>Ctrl + V</strong> để dán ảnh</div>
+                  <div class="upload-instruction-divider">hoặc</div>
+                  <button type="button" class="btn btn-secondary btn-file-pick" data-target="file-input-1">Chọn ảnh từ Thư viện</button>
+                </div>
+
+                <div class="upload-preview-state hidden" id="upload-preview-1">
+                  <img id="preview-img-1" src="" alt="Preview Khung 1" class="preview-img">
+                  <div class="preview-actions-bar">
+                    <button type="button" class="btn-action-img btn-change-img" data-target="file-input-1">Đổi ảnh</button>
+                    <button type="button" class="btn-action-img btn-remove-img" data-frame="1">Xóa ảnh</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTE BOX -->
+              <div class="editor-note-box">
+                <label for="edit-note-1" class="editor-note-label">Điều kiện & Ghi chú 1:</label>
+                <textarea id="edit-note-1" class="note-textarea" rows="3" placeholder="Nhập điều kiện nhận biết khung Xu Hướng..."></textarea>
+              </div>
+            </div>
+
+            <!-- FRAME 2: MÔ HÌNH -->
+            <div class="editor-tf-card" id="edit-box-2" data-frame="2">
+              <div class="editor-tf-header">
+                <span class="tf-role-title">2. Mô Hình</span>
+                <div class="tf-select-wrapper">
+                  <label class="sr-only" for="edit-tf-2">Khung giờ 2</label>
+                  <select id="edit-tf-2" class="tf-select">
+                    <option value="1D">1D</option>
+                    <option value="H4" selected>H4</option>
+                    <option value="H2">H2</option>
+                    <option value="H1">H1</option>
+                    <option value="M30">M30</option>
+                    <option value="M15">M15</option>
+                    <option value="M10">M10</option>
+                    <option value="M5">M5</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- IMAGE UPLOAD / PASTE ZONE -->
+              <div class="upload-dropzone" id="dropzone-2" tabindex="0">
+                <input type="file" id="file-input-2" accept="image/*" class="visually-hidden">
+                <input type="hidden" id="img-data-2" value="">
+
+                <div class="upload-idle-state" id="upload-idle-2">
+                  <div class="upload-instruction-pc">Bấm vào đây rồi ấn <strong>Ctrl + V</strong> để dán ảnh</div>
+                  <div class="upload-instruction-divider">hoặc</div>
+                  <button type="button" class="btn btn-secondary btn-file-pick" data-target="file-input-2">Chọn ảnh từ Thư viện</button>
+                </div>
+
+                <div class="upload-preview-state hidden" id="upload-preview-2">
+                  <img id="preview-img-2" src="" alt="Preview Khung 2" class="preview-img">
+                  <div class="preview-actions-bar">
+                    <button type="button" class="btn-action-img btn-change-img" data-target="file-input-2">Đổi ảnh</button>
+                    <button type="button" class="btn-action-img btn-remove-img" data-frame="2">Xóa ảnh</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTE BOX -->
+              <div class="editor-note-box">
+                <label for="edit-note-2" class="editor-note-label">Điều kiện & Ghi chú 2:</label>
+                <textarea id="edit-note-2" class="note-textarea" rows="3" placeholder="Nhập mô hình Giá & Phân kỳ RSI nhận diện..."></textarea>
+              </div>
+            </div>
+
+            <!-- FRAME 3: LIỀN KỀ -->
+            <div class="editor-tf-card" id="edit-box-3" data-frame="3">
+              <div class="editor-tf-header">
+                <span class="tf-role-title">3. Liền Kề</span>
+                <div class="tf-select-wrapper">
+                  <label class="sr-only" for="edit-tf-3">Khung giờ 3</label>
+                  <select id="edit-tf-3" class="tf-select">
+                    <option value="1D">1D</option>
+                    <option value="H4">H4</option>
+                    <option value="H2">H2</option>
+                    <option value="H1" selected>H1</option>
+                    <option value="M30">M30</option>
+                    <option value="M15">M15</option>
+                    <option value="M10">M10</option>
+                    <option value="M5">M5</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- IMAGE UPLOAD / PASTE ZONE -->
+              <div class="upload-dropzone" id="dropzone-3" tabindex="0">
+                <input type="file" id="file-input-3" accept="image/*" class="visually-hidden">
+                <input type="hidden" id="img-data-3" value="">
+
+                <div class="upload-idle-state" id="upload-idle-3">
+                  <div class="upload-instruction-pc">Bấm vào đây rồi ấn <strong>Ctrl + V</strong> để dán ảnh</div>
+                  <div class="upload-instruction-divider">hoặc</div>
+                  <button type="button" class="btn btn-secondary btn-file-pick" data-target="file-input-3">Chọn ảnh từ Thư viện</button>
+                </div>
+
+                <div class="upload-preview-state hidden" id="upload-preview-3">
+                  <img id="preview-img-3" src="" alt="Preview Khung 3" class="preview-img">
+                  <div class="preview-actions-bar">
+                    <button type="button" class="btn-action-img btn-change-img" data-target="file-input-3">Đổi ảnh</button>
+                    <button type="button" class="btn-action-img btn-remove-img" data-frame="3">Xóa ảnh</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTE BOX -->
+              <div class="editor-note-box">
+                <label for="edit-note-3" class="editor-note-label">Điều kiện & Ghi chú 3:</label>
+                <textarea id="edit-note-3" class="note-textarea" rows="3" placeholder="Nhập điều kiện khung Liền kề, retest cản..."></textarea>
+              </div>
+            </div>
+
+            <!-- FRAME 4: CẤU TRÚC -->
+            <div class="editor-tf-card" id="edit-box-4" data-frame="4">
+              <div class="editor-tf-header">
+                <span class="tf-role-title">4. Cấu Trúc</span>
+                <div class="tf-select-wrapper">
+                  <label class="sr-only" for="edit-tf-4">Khung giờ 4</label>
+                  <select id="edit-tf-4" class="tf-select">
+                    <option value="1D">1D</option>
+                    <option value="H4">H4</option>
+                    <option value="H2">H2</option>
+                    <option value="H1">H1</option>
+                    <option value="M30">M30</option>
+                    <option value="M15" selected>M15</option>
+                    <option value="M10">M10</option>
+                    <option value="M5">M5</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- IMAGE UPLOAD / PASTE ZONE -->
+              <div class="upload-dropzone" id="dropzone-4" tabindex="0">
+                <input type="file" id="file-input-4" accept="image/*" class="visually-hidden">
+                <input type="hidden" id="img-data-4" value="">
+
+                <div class="upload-idle-state" id="upload-idle-4">
+                  <div class="upload-instruction-pc">Bấm vào đây rồi ấn <strong>Ctrl + V</strong> để dán ảnh</div>
+                  <div class="upload-instruction-divider">hoặc</div>
+                  <button type="button" class="btn btn-secondary btn-file-pick" data-target="file-input-4">Chọn ảnh từ Thư viện</button>
+                </div>
+
+                <div class="upload-preview-state hidden" id="upload-preview-4">
+                  <img id="preview-img-4" src="" alt="Preview Khung 4" class="preview-img">
+                  <div class="preview-actions-bar">
+                    <button type="button" class="btn-action-img btn-change-img" data-target="file-input-4">Đổi ảnh</button>
+                    <button type="button" class="btn-action-img btn-remove-img" data-frame="4">Xóa ảnh</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTE BOX -->
+              <div class="editor-note-box">
+                <label for="edit-note-4" class="editor-note-label">Điều kiện & Ghi chú 4:</label>
+                <textarea id="edit-note-4" class="note-textarea" rows="3" placeholder="Nhập vi cấu trúc, nến kích hoạt vào lệnh (Trigger)..."></textarea>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM ACTION BUTTONS -->
+          <div class="editor-bottom-bar">
+            <button type="button" id="btn-editor-cancel-bottom" class="btn btn-secondary">Hủy bỏ</button>
+            <button type="submit" class="btn btn-primary btn-save">LƯU MÔ HÌNH</button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODAL: LIGHTBOX FULLSCREEN ZOOM -->
+    <!-- ========================================== -->
+    <div id="lightbox-modal" class="lightbox-overlay hidden" role="dialog" aria-modal="true">
+      <div class="lightbox-top-bar">
+        <div class="lightbox-info">
+          <span id="lightbox-title" class="lightbox-title">-</span>
+          <span id="lightbox-badge" class="badge badge-tf">-</span>
+        </div>
+        <div class="lightbox-controls">
+          <button id="btn-zoom-in" class="lightbox-btn" type="button" title="Thu phóng to">+</button>
+          <button id="btn-zoom-out" class="lightbox-btn" type="button" title="Thu phóng nhỏ">-</button>
+          <button id="btn-zoom-reset" class="lightbox-btn" type="button" title="Đặt lại">100%</button>
+          <button id="btn-lightbox-close" class="lightbox-btn lightbox-btn-close" type="button" title="Đóng (ESC)">ĐÓNG [X]</button>
+        </div>
+      </div>
+
+      <div class="lightbox-image-stage" id="lightbox-stage">
+        <img id="lightbox-img" src="" alt="Phóng to biểu đồ" class="lightbox-img">
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/db.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

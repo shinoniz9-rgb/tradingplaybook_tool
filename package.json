@@ -1,0 +1,18 @@
+{
+  "name": "tradingplaybook-tool",
+  "version": "1.0.0",
+  "description": "Trading Playbook - Cong cu luu tru mo hinh Gia va RSI da khung thoi gian",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "trading",
+    "playbook",
+    "rsi",
+    "price-action"
+  ],
+  "author": "",
+  "license": "ISC"
+}
