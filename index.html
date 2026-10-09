@@ -33,10 +33,16 @@
             <span id="sync-status-label">☁️ Đang kết nối...</span>
           </button>
 
-          <button id="btn-header-add" class="btn btn-primary" type="button">+ THÊM MẪU MỚI</button>
+          <button id="btn-header-add" class="btn btn-primary" type="button">
+            <span class="btn-text-desktop">+ THÊM MẪU MỚI</span>
+            <span class="btn-text-mobile">+ Thêm</span>
+          </button>
           
           <div class="dropdown-menu-wrapper">
-            <button id="btn-more-menu" class="btn btn-secondary" type="button" aria-expanded="false">DỮ LIỆU ▾</button>
+            <button id="btn-more-menu" class="btn btn-secondary" type="button" aria-expanded="false">
+              <span class="btn-text-desktop">DỮ LIỆU ▾</span>
+              <span class="btn-text-mobile">Dữ liệu ▾</span>
+            </button>
             <div id="dropdown-more" class="dropdown-popover hidden">
               <button id="btn-action-sync-now" class="dropdown-item text-cyan" type="button">🔄 Đồng bộ đám mây ngay</button>
               <div class="dropdown-divider"></div>
@@ -124,22 +130,22 @@
       <section id="view-detail" class="view-section">
         <!-- DETAIL NAVIGATION & HEADER -->
         <div class="detail-header-card">
-          <div class="detail-nav-left">
-            <button id="btn-detail-back" class="btn btn-secondary btn-back" type="button">← Quay lại danh sách</button>
-            <div class="detail-meta-group">
-              <h1 id="detail-title" class="detail-title-text">-</h1>
-              <div class="detail-badges-row">
-                <span id="detail-badge-pair" class="badge badge-pair">-</span>
-                <span id="detail-badge-position" class="badge badge-pos">-</span>
-                <span id="detail-badge-outcome" class="badge badge-outcome">-</span>
-                <span id="detail-date" class="meta-date">-</span>
-              </div>
+          <div class="detail-top-nav-bar">
+            <button id="btn-detail-back" class="btn btn-secondary btn-back" type="button">← Quay lại</button>
+            <div class="detail-nav-right">
+              <button id="btn-detail-edit" class="btn btn-secondary" type="button">Chỉnh sửa</button>
+              <button id="btn-detail-delete" class="btn btn-danger" type="button">Xóa mẫu</button>
             </div>
           </div>
-
-          <div class="detail-nav-right">
-            <button id="btn-detail-edit" class="btn btn-secondary" type="button">Chỉnh sửa</button>
-            <button id="btn-detail-delete" class="btn btn-danger" type="button">Xóa mẫu</button>
+          
+          <div class="detail-meta-group">
+            <h1 id="detail-title" class="detail-title-text">-</h1>
+            <div class="detail-badges-row">
+              <span id="detail-badge-pair" class="badge badge-pair">-</span>
+              <span id="detail-badge-position" class="badge badge-pos">-</span>
+              <span id="detail-badge-outcome" class="badge badge-outcome">-</span>
+              <span id="detail-date" class="meta-date">-</span>
+            </div>
           </div>
         </div>
 
@@ -245,11 +251,9 @@
 
           <!-- EDITOR TOP CONTROLS -->
           <div class="editor-header-card">
-            <div class="editor-nav-left">
-              <button type="button" id="btn-editor-cancel" class="btn btn-secondary">Hủy bỏ</button>
+            <div class="editor-top-bar">
+              <button type="button" id="btn-editor-cancel" class="btn btn-secondary">← Hủy</button>
               <h2 id="editor-heading" class="editor-heading-text">Thêm Mới Mô Hình</h2>
-            </div>
-            <div class="editor-nav-right">
               <button type="submit" id="btn-editor-submit" class="btn btn-primary btn-save">LƯU MÔ HÌNH</button>
             </div>
           </div>
@@ -291,10 +295,12 @@
 
             <!-- PRESETS QUICK TIME-FRAME BAR -->
             <div class="presets-row">
-              <span class="presets-label">Gán nhanh khung giờ (Preset):</span>
-              <button type="button" class="btn-preset" data-preset="swing">Swing (1D - H4 - H1 - M15)</button>
-              <button type="button" class="btn-preset" data-preset="intraday">Intraday (H4 - H1 - M15 - M5)</button>
-              <button type="button" class="btn-preset" data-preset="scalp">Scalp (H1 - M30 - M15 - M5)</button>
+              <span class="presets-label">Gán nhanh khung giờ:</span>
+              <div class="presets-buttons-group">
+                <button type="button" class="btn-preset" data-preset="swing">Swing</button>
+                <button type="button" class="btn-preset" data-preset="intraday">Intraday</button>
+                <button type="button" class="btn-preset" data-preset="scalp">Scalp</button>
+              </div>
             </div>
           </div>
 

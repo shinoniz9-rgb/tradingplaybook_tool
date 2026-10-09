@@ -296,6 +296,14 @@ html, body {
   white-space: nowrap;
 }
 
+.btn-text-mobile {
+  display: none;
+}
+
+.btn-text-desktop {
+  display: inline;
+}
+
 .btn-primary {
   background-color: var(--accent-cyan);
   border-color: var(--accent-cyan);
@@ -697,17 +705,15 @@ html, body {
   padding: 14px 18px;
   margin-bottom: 16px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.detail-nav-left {
+.detail-top-nav-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .btn-back {
@@ -933,13 +939,13 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
 }
 
-.editor-nav-left {
+.editor-top-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 16px;
 }
 
@@ -1017,6 +1023,13 @@ html, body {
   gap: 8px;
   border-top: 1px solid var(--border-subtle);
   padding-top: 12px;
+}
+
+.presets-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .presets-label {
@@ -1420,6 +1433,15 @@ html, body {
 /* MOBILE / IPHONE (< 768px) */
 /* Tối ưu hóa toàn diện cho iPhone: Dễ theo dõi, đổi chế độ lướt/cuộn, chống giật */
 @media screen and (max-width: 767px) {
+  /* Hiển thị chữ ngắn gọn cho nút trên Mobile để không bao giờ rớt hàng */
+  .btn-text-desktop {
+    display: none !important;
+  }
+
+  .btn-text-mobile {
+    display: inline !important;
+  }
+
   /* Chống iOS Safari tự động phóng to làm lệch giao diện khi chạm gõ */
   input[type="text"],
   input[type="number"],
@@ -1432,6 +1454,7 @@ html, body {
     font-size: 16px !important;
   }
 
+  /* Header tràn viền an toàn theo tai thỏ & thanh bar iPhone */
   .app-header {
     padding-top: max(8px, env(safe-area-inset-top));
     padding-bottom: 8px;
@@ -1441,77 +1464,239 @@ html, body {
 
   .header-container {
     padding: 0;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .brand-group {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .brand-title {
-    font-size: 13.5px;
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .brand-subtitle {
     display: none;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
   .cloud-sync-pill {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 5px 7px;
+    font-size: 10.5px;
+    gap: 4px;
+    max-width: 82px;
+    flex-shrink: 0;
+  }
+
+  .cloud-sync-pill #sync-status-label {
+    max-width: 56px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .btn {
-    padding: 6px 10px;
-    font-size: 12px;
+    padding: 6px 9px;
+    font-size: 11.5px;
+    white-space: nowrap;
   }
 
   .main-content {
     padding: 10px 10px max(24px, env(safe-area-inset-bottom)) 10px;
   }
 
+  /* Thanh công cụ & Bộ lọc: Chia đều 3 cột ngang gọn gàng, không để lẻ hàng */
   .toolbar-card {
-    padding: 12px;
+    padding: 10px 12px;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .input-search {
+    padding: 8px 32px 8px 12px;
+    font-size: 13px;
   }
 
   .filters-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    align-items: end;
   }
 
   .filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     width: 100%;
+    min-width: 0;
+  }
+
+  .filter-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    white-space: nowrap;
+    text-transform: uppercase;
   }
 
   .filter-item .select-control {
     width: 100%;
+    min-width: 0;
+    padding: 6px 4px;
+    font-size: 12px;
+    text-align: center;
+    text-overflow: ellipsis;
+    border-radius: 4px;
   }
 
   .filter-counter {
     grid-column: 1 / -1;
-    text-align: right;
-    margin-top: 2px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--border-subtle);
     font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
   }
 
+  /* Danh sách thẻ mô hình: Ngay ngắn, chân thẻ cố định 1 dòng */
   .playbooks-grid {
     grid-template-columns: 1fr !important;
     gap: 12px;
   }
 
   .playbook-summary-card {
-    padding: 14px;
-  }
-
-  .form-grid-3 {
-    grid-template-columns: 1fr;
+    padding: 12px 14px;
     gap: 10px;
   }
 
-  /* Sticky Navigation Tabs bar trên iPhone để dễ theo dõi */
+  .card-top-badges {
+    gap: 6px;
+  }
+
+  .badge {
+    padding: 3px 6px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .card-title-text {
+    font-size: 14px;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: nowrap;
+    padding-top: 8px;
+    margin-top: 2px;
+  }
+
+  .card-date {
+    font-size: 10.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .card-actions-row {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .btn-card-action {
+    padding: 4px 7px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Header chi tiết mô hình: Ngay ngắn, thanh trên đối xứng */
+  .detail-header-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+
+  .detail-top-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .detail-top-nav-bar .btn-back {
+    font-size: 11.5px;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+
+  .detail-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .detail-nav-right .btn {
+    padding: 5px 8px;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+
+  .detail-meta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .detail-title-text {
+    font-size: 15.5px;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .detail-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* Sticky Navigation Tabs: 4 Tab chia đều 25% màn hình, không bị tràn hay rớt hàng */
   .mobile-tabs-container {
     display: block;
     position: sticky;
-    top: 50px;
+    top: 46px;
     z-index: 40;
-    background-color: rgba(10, 13, 20, 0.95);
+    background-color: rgba(10, 13, 20, 0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding: 6px 0;
@@ -1519,7 +1704,6 @@ html, body {
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  /* Thanh chọn chế độ xem: Từng khung HOẶC Cuộn cả 4 khung */
   .mobile-view-mode-bar {
     display: flex;
     align-items: center;
@@ -1527,20 +1711,21 @@ html, body {
     background-color: var(--bg-card);
     border: 1px solid var(--border-medium);
     border-radius: 6px;
-    padding: 5px 8px;
-    margin-bottom: 8px;
+    padding: 4px 8px;
+    margin-bottom: 6px;
   }
 
   .mode-bar-label {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     font-family: var(--font-mono);
     color: var(--text-muted);
+    white-space: nowrap;
   }
 
   .mode-toggle-pills {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     background-color: #0b101b;
     padding: 2px;
     border-radius: 5px;
@@ -1548,47 +1733,45 @@ html, body {
   }
 
   .btn-mode-pill {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 10.5px;
     font-weight: 600;
-    font-family: var(--font-main);
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .btn-mode-pill.active {
-    background-color: var(--accent-cyan);
-    color: #ffffff;
-    font-weight: 700;
+    white-space: nowrap;
   }
 
   .mobile-tabs-scroll {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .mobile-tabs-scroll::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    width: 100%;
+    padding-bottom: 2px;
+    overflow: visible;
   }
 
   .m-tab-btn {
-    flex: 1;
-    min-width: 80px;
-    padding: 8px 6px;
-    font-size: 11.5px;
-    border-radius: 6px;
+    width: 100%;
+    min-width: 0;
+    padding: 7px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* Chế độ 1: Lướt từng khung ngang mượt mà (ProMotion 120Hz) */
+  .mobile-swipe-hint {
+    font-size: 10px;
+    text-align: center;
+    margin-top: 4px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 4 Timeframe Cards */
   .frames-grid-layout {
     display: flex;
     overflow-x: auto !important;
@@ -1616,7 +1799,6 @@ html, body {
     border-radius: 8px;
   }
 
-  /* Chế độ 2: Cuộn dọc liên tục 4 khung (Top-Down Feed) */
   .frames-grid-layout.stacked-mode {
     display: flex !important;
     flex-direction: column !important;
@@ -1632,7 +1814,6 @@ html, body {
     scroll-snap-align: none !important;
   }
 
-  /* Luôn hiển thị chỉ dẫn phóng to nến trên màn hình cảm ứng */
   .zoom-indicator {
     opacity: 0.95 !important;
     background-color: rgba(10, 14, 23, 0.88);
@@ -1640,7 +1821,7 @@ html, body {
     -webkit-backdrop-filter: blur(4px);
     border: 1px solid rgba(56, 189, 248, 0.4);
     color: #38bdf8;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
   }
 
@@ -1649,7 +1830,95 @@ html, body {
     line-height: 1.6;
   }
 
-  /* Editor 4 frames stacked on mobile */
+  /* Editor View: Gọn gàng, thẳng hàng cân đối */
+  .editor-header-card {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .editor-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .editor-top-bar .btn {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .editor-heading-text {
+    font-size: 14.5px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .editor-meta-card {
+    padding: 12px 14px;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* Form 3 cột trên mobile cho Cặp / Vị thế / Kết quả */
+  .form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .form-grid-3 .form-group {
+    min-width: 0;
+  }
+
+  .form-grid-3 .form-label {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .form-grid-3 .select-control {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 3px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .presets-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+  }
+
+  .presets-label {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .presets-buttons-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+
+  .btn-preset {
+    width: 100%;
+    padding: 6px 3px;
+    font-size: 10.5px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
   .editor-frames-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -1660,18 +1929,14 @@ html, body {
     aspect-ratio: 16 / 9;
   }
 
-  .detail-header-card,
-  .editor-header-card {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 14px;
-    gap: 10px;
+  .upload-instruction-pc,
+  .upload-instruction-divider {
+    display: none;
   }
 
-  .detail-nav-right,
-  .editor-nav-right {
+  .btn-file-pick {
     width: 100%;
-    display: flex;
-    justify-content: flex-end;
+    padding: 8px 10px;
+    font-size: 11.5px;
   }
 }
